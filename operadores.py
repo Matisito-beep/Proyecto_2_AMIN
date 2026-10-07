@@ -47,11 +47,48 @@ def calcular_heuristica(matriz_distancia, num_ciudades):
 
     return heuristica
 
-def seleccionar_siguiente_ciudad(ciudad_actual):
-    return
+def seleccionar_siguiente_ciudad(ciudad_actual, ciudades_pendientes, feromona, heuristica, alfa, beta, q0):
+    if np.random.random() < q0:
+        mejor_ciudad = -1
+        max_valor = 0
+        for c in ciudades_pendientes: 
+            valor = (feromona[ciudad_actual][c] ** alfa) * (heuristica[ciudad_actual][c] ** beta)
+            if valor > max_valor:
+                max_valor = valor
+                mejor_ciudad = c
+        return mejor_ciudad
+    else:
+        valores= []
+        for c in ciudades_pendientes:
+            val = (feromona[ciudad_actual][c] ** alfa) * (heuristica[ciudad_actual][c] ** beta)
+            valores.append(val)
 
-def construir_ruta_hormiga():
-    return
+        suma_valores = sum(valores)
+        if suma_valores == 0:
+            return np.random.choice(ciudades_pendientes)
 
-def actualizacion_local_feromona():
+        probabilidades = [v/suma_valores for v in valores]
+
+        siguiente = np.random.choice(ciudades_pendientes, p = probabilidades)
+        return siguiente
+
+def construir_ruta_hormiga(num_ciudades, feromona, heuristica, alfa, beta, q0):
+    ciudad_inicial = np.random.randint(0, num_ciudades)
+    ruta = [ciudad_inicial]
+
+    ciudades_pendientes = list(range(num_ciudades))
+    ciudades_pendientes.remove(ciudad_inicial)
+
+    ciudad_actual = ciudad_inicial
+    while ciudades_pendientes:
+        siguiente_ciudad = seleccionar_siguiente_ciudad(ciudad_actual, ciudades_pendientes, feromona, heuristica, alfa, beta, q0,)
+        ruta.append(siguiente_ciudad)
+        ciudades_pendientes.remove(siguiente_ciudad)
+        ciudad_actual = siguiente_ciudad
+
+    return ruta
+
+def actualizacion_local_feromona(ciudad_i, ciudad_j, feromona, rho, tau_0):
+    feromona[ciudad_i][ciudad_j] = (1.0 - rho) * feromona[ciudad_i][ciudad_j] + rho * tau_0
+    feromona[ciudad_j][ciudad_i] = feromona[ciudad_i][ciudad_j]
     return
